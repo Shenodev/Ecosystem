@@ -1,0 +1,9 @@
+/*
+ * Gallery entry for packages/ui's Playwright suite.
+ *
+ * Compiled by the "build:gallery" script with the Tailwind CLI. Kept separate
+ * from src/theme.css so the shipped theme has no gallery-only @source rules.
+ */
+@import "../../src/theme.css";
+
+@source "./index.html";

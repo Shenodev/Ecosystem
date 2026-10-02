@@ -28,4 +28,20 @@ test.describe("ShenoInventory root route", () => {
     const response = await page.goto("/");
     expect(response?.status()).toBe(200);
   });
+
+  test("brand token resolves to Electric Cyan through the Tailwind theme", async ({
+    page,
+  }) => {
+    await expect(page.getByTestId("primary-action")).toHaveCSS(
+      "background-color",
+      "rgb(34, 211, 238)",
+    );
+  });
+
+  test("primary action label is dark on cyan", async ({ page }) => {
+    await expect(page.getByTestId("primary-action")).toHaveCSS(
+      "color",
+      "rgb(8, 14, 30)",
+    );
+  });
 });

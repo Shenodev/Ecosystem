@@ -1,0 +1,7 @@
+/*
+ * ShenoDev global styles for ShenoInventory.
+ *
+ * One import of the shared theme — Tailwind v4 is framework-agnostic, so this
+ * is byte-identical to what ShenoStore and ShenoFlow import.
+ */
+@import '@shenodev/ui/theme.css';

@@ -1,0 +1,48 @@
+/**
+ * ShenoDev design tokens — Tailwind v4 theme.
+ *
+ * Source of truth: docs/UI_UX_Brief.md §3.2. Tailwind is the token source of
+ * truth, so apps style with generated utilities (bg-sheno-primary) rather than
+ * hand-written CSS custom properties.
+ *
+ * Three layers per the brief:
+ *   1. Primitive — raw values, the only place a hex may appear.
+ *   2. Semantic  — purpose, expressed purely as var() references.
+ *   3. Component — utility compositions in app markup, never a hex.
+ *
+ * `@theme inline` on the semantic layer is required: it makes Tailwind emit
+ * `var(--color-sheno-primary)` into utilities instead of inlining the resolved
+ * value, so re-theming a primitive propagates without rebuilding utilities.
+ *
+ * This single file replaces the previous three framework presets listed in
+ * docs/Implementation_Plan.md task 26. Tailwind v4 is framework-agnostic, so
+ * Next.js, Nuxt, and SvelteKit all consume this same entry point.
+ */
+
+@import "tailwindcss";
+
+/* --- Layer 1: Primitive (raw values) ------------------------------------- */
+@theme {
+  --color-sheno-slate-950: #080e1e;
+  --color-sheno-slate-900: #0f172a;
+  --color-sheno-slate-800: #1e293b;
+  --color-sheno-cyan-400: #22d3ee;
+  --color-sheno-cyan-500: #06b6d4;
+  --color-sheno-white: #ffffff;
+  --color-sheno-gray-300: #d1d5db;
+}
+
+/* --- Layer 2: Semantic (purpose) ----------------------------------------- */
+@theme inline {
+  --color-sheno-bg-base: var(--color-sheno-slate-950);
+  --color-sheno-bg-surface: var(--color-sheno-slate-900);
+  --color-sheno-bg-elevated: var(--color-sheno-slate-800);
+
+  --color-sheno-primary: var(--color-sheno-cyan-400);
+  --color-sheno-primary-hover: var(--color-sheno-cyan-500);
+
+  --color-sheno-text-primary: var(--color-sheno-white);
+  --color-sheno-text-secondary: var(--color-sheno-gray-300);
+
+  --color-sheno-focus-ring: var(--color-sheno-cyan-400);
+}

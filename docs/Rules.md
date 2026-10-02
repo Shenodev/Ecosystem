@@ -179,27 +179,30 @@ A bypass that returns before the tenant filter is the exact bug this rule exists
 
 ### 6.1 The Tokens
 
-| Token | Hex | Role |
-|-------|-----|------|
-| `--sheno-bg-base` | `#080e1e` | Page background |
-| `--sheno-bg-surface` | `#0F172A` | Cards, sidebars, panels |
-| `--sheno-bg-elevated` | `#1E293B` | Data tables, nested surfaces, modals |
-| `--sheno-primary` | `#22d3ee` | Primary buttons, active states, highlights |
-| `--sheno-primary-hover` | `#06B6D4` | Hover states, secondary elements |
-| `--sheno-text-primary` | `#FFFFFF` | Headings, primary text, key values |
-| `--sheno-text-secondary` | `#D1D5DB` | Labels, helper text, metadata |
+Tailwind v4 is the token source of truth. Tokens are declared once in
+`packages/ui/src/theme.css` as a Tailwind `@theme` block and consumed by all
+three apps as generated utilities.
+
+| Token | Hex | Utility example | Role |
+|-------|-----|-----------------|------|
+| `--color-sheno-bg-base` | `#080e1e` | `bg-sheno-bg-base` | Page background |
+| `--color-sheno-bg-surface` | `#0F172A` | `bg-sheno-bg-surface` | Cards, sidebars, panels |
+| `--color-sheno-bg-elevated` | `#1E293B` | `bg-sheno-bg-elevated` | Data tables, nested surfaces, modals |
+| `--color-sheno-primary` | `#22d3ee` | `bg-sheno-primary` | Primary buttons, active states, highlights |
+| `--color-sheno-primary-hover` | `#06B6D4` | `bg-sheno-primary-hover` | Hover states, **and ShenoFlow primary buttons** (§6.5) |
+| `--color-sheno-text-primary` | `#FFFFFF` | `text-sheno-text-primary` | Headings, primary text, key values |
+| `--color-sheno-text-secondary` | `#D1D5DB` | `text-sheno-text-secondary` | Labels, helper text, metadata |
+
+Tokens resolve through three layers: **primitive** (`--color-sheno-cyan-400`) →
+**semantic** (`--color-sheno-primary`) → **component** (utility classes). Only the
+primitive layer may contain a hex.
 
 ### 6.2 Correct vs Incorrect
 
-```css
-/* ✅ CORRECT — references the token */
-.btn-primary {
-  background: var(--sheno-primary);
-  color: var(--sheno-bg-base);
-}
-.btn-primary:hover { background: var(--sheno-primary-hover); }
-.card { background: var(--sheno-bg-surface); }
-.table { background: var(--sheno-bg-elevated); }
+```tsx
+// ✅ CORRECT — utilities resolve through the shared theme
+<div className="bg-sheno-bg-surface text-sheno-text-primary" />
+<button className="bg-sheno-primary text-sheno-bg-base hover:bg-sheno-primary-hover" />
 ```
 
 ```css
@@ -213,15 +216,30 @@ A bypass that returns before the tenant filter is the exact bug this rule exists
 <div style={{ background: '#1a2b3c' }} />
 ```
 
-**A hardcoded hex in app code is a build failure.** Enforce it with a lint rule or the `validate-tokens` script from the `design-system` skill — do not rely on review to catch it.
+```jsx
+// ❌ WRONG — arbitrary-value escape hatch bypasses the token system
+<div className="bg-[#22d3ee]" />
+```
 
-**Changing a color** means editing `packages/ui` tokens. All three apps pick it up. Never edit an app's CSS directly to shift a color.
+**A hardcoded hex in app code is a build failure.** `packages/ui` asserts this
+today via `tests/theme.spec.ts`. Enforce the app-side cases with a lint rule or
+the `validate-tokens` script from the `design-system` skill — do not rely on
+review to catch it.
+
+**Changing a color** means editing `packages/ui/src/theme.css`. All three apps pick it up. Never edit an app's CSS or use a Tailwind arbitrary value to shift a color.
 
 ### 6.3 Status Colors
 
-Logistics states use the dedicated status palette from [UI_UX_Brief.md](./UI_UX_Brief.md#26-status-colors) — `--status-in-progress`, `--status-waiting`, `--status-out-for-delivery`, `--status-completed`, `--status-low-stock`, `--status-demo`. Status colors are **never** substituted with brand tokens.
+Logistics states use the dedicated status palette from [UI_UX_Brief.md](./UI_UX_Brief.md#26-status-colors) — `--color-sheno-status-in-progress`, `--color-sheno-status-waiting`, `--color-sheno-status-out-for-delivery`, `--color-sheno-status-completed`, `--color-sheno-status-low-stock`, `--color-sheno-status-demo`. Status colors are **never** substituted with brand tokens.
 
 Every status chip pairs color with **an icon and a text label**. Color alone fails colorblind users and fails on washed-out displays.
+
+### 6.5 ShenoFlow Cyan Split
+
+On ShenoFlow, `--color-sheno-primary` (`#22d3ee`) means the **delivery state**
+only, and primary buttons use `bg-sheno-primary-hover` (`#06B6D4`). Never put
+cyan on both a primary button and an "Out for Delivery" chip in the same view.
+Enforced by `apps/shenoflow/tests/home.spec.ts`.
 
 ### 6.4 The Logo
 
@@ -235,7 +253,7 @@ The ShenoDev logo is displayed on all auth screens, global headers, and email te
 | Apple touch / PWA | `png/icons/apple-touch-icon.png`, `icon-192.png`, `icon-512.png` |
 | Tight spaces (<120px) | `svg/shenodev-mark.svg` |
 
-**Logo color is `#22d3ee`** — the same value as `--sheno-primary`. The mark and the primary button sharing one color is what makes the brand read as a single system.
+**Logo color is `#22d3ee`** — the same value as `--color-sheno-primary`. The mark and the primary button sharing one color is what makes the brand read as a single system.
 
 **Two source defects are already fixed in `assets/brand/`. Do not reintroduce:**
 

@@ -22,17 +22,17 @@
 - [ ] `packages/db`: Row Level Security policies + per-transaction `SET LOCAL app.tenant_id` (§10)
 - [ ] `packages/db`: order status enum, exported for all three apps
 - [ ] `packages/db`: seed script, including the reserved `demo_tenant_id` tenant (§11)
-- [ ] `packages/ui`: three-layer token CSS (primitive → semantic → component)
-- [ ] `packages/ui`: Tailwind preset (Next.js), Nuxt config preset, SvelteKit preset
+- [x] `packages/ui`: three-layer token CSS (primitive → semantic → component) — implemented as a Tailwind v4 `@theme` block in `src/theme.css` (primitive) + `@theme inline` (semantic)
+- [x] `packages/ui`: Tailwind preset (Next.js), Nuxt config preset, SvelteKit preset — collapsed to **one** shared `src/theme.css`; Tailwind v4 is framework-agnostic, so per-framework presets would have been three copies to keep in sync
 - [ ] `packages/ui`: copy logo assets in; document usage rules
 - [ ] `packages/config`: shared tsconfig, eslint, prettier
 
 **Exit criteria**
 
-- [ ] `turbo build` green across the monorepo
+- [x] `turbo build` green across the monorepo
 - [ ] Migration applies to an empty Postgres; `turbo db:seed` populates demo data
 - [ ] A tenant-scoped query with a wrong `tenant_id` returns **zero rows** (RLS proven to fail closed)
-- [ ] All three framework presets compile and resolve the same token values
+- [x] All three apps compile and resolve the same token values — each asserts its rendered `background-color` in E2E: `apps/shenostore`, `apps/shenoinventory`, `apps/shenoflow`
 
 ---
 

@@ -1,11 +1,15 @@
-<h1>ShenoInventory Dashboard</h1>
-
-<!--
-	Scaffold only. Branch, shelf, and stock views land in later phases per
-	docs/Implementation_Plan.md.
-
-	@shenodev/ui is intentionally not imported yet — wiring the brand tokens is
-	Phase 3 work, and the acceptance criterion for this app is the route
-	rendering, not the visual design.
--->
-<p>Inventory management for ShenoDev tenants.</p>
+<main class="min-h-screen bg-sheno-bg-base p-8 text-sheno-text-primary">
+	<h1 class="text-3xl font-semibold">ShenoInventory Dashboard</h1>
+	<p class="text-sheno-text-secondary">Inventory management for ShenoDev tenants.</p>
+	<!--
+		Primary action per UI_UX_Brief.md §4: solid cyan fill, dark text. The
+		#06B6D4 shift at §150 is ShenoFlow-only, so ShenoInventory keeps #22d3ee.
+	-->
+	<button
+		type="button"
+		data-testid="primary-action"
+		class="mt-6 cursor-pointer rounded-lg border border-transparent bg-sheno-primary px-5 py-2.5 font-semibold text-sheno-bg-base hover:bg-sheno-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sheno-focus-ring"
+	>
+		Receive stock
+	</button>
+</main>

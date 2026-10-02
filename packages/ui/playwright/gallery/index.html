@@ -3,17 +3,56 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ShenoDev UI — component gallery</title>
+    <title>ShenoDev UI — token gallery</title>
 
-    <!-- ponytail: no bundler. The library ships plain CSS, so the gallery is
-         plain HTML with two link tags. Revisit only if a component ever needs
-         to be a real framework component. -->
-    <link rel="stylesheet" href="../../src/tokens.css" />
-    <link rel="stylesheet" href="../../src/primary-button.css" />
+    <!-- ponytail: no bundler. Tailwind CLI compiles gallery.css to tailwind.css
+         via the "build:gallery" script, so the gallery stays plain HTML. -->
+    <link rel="stylesheet" href="./tailwind.css" />
   </head>
-  <body class="sheno-bg-base">
-    <main>
-      <button type="button" class="sheno-btn sheno-btn--primary">Add to cart</button>
+  <body class="bg-sheno-bg-base text-sheno-text-primary">
+    <main class="p-8 space-y-6">
+      <h1 class="text-2xl font-semibold">ShenoDev token gallery</h1>
+
+      <div class="flex gap-4">
+        <div
+          data-testid="swatch-primary"
+          class="h-16 w-32 rounded bg-sheno-primary"
+          title="bg-sheno-primary"
+        ></div>
+        <div
+          data-testid="swatch-hover"
+          class="h-16 w-32 rounded bg-sheno-primary-hover"
+          title="bg-sheno-primary-hover"
+        ></div>
+        <div
+          data-testid="swatch-surface"
+          class="h-16 w-32 rounded bg-sheno-bg-surface"
+          title="bg-sheno-bg-surface"
+        ></div>
+        <div
+          data-testid="swatch-elevated"
+          class="h-16 w-32 rounded bg-sheno-bg-elevated"
+          title="bg-sheno-bg-elevated"
+        ></div>
+      </div>
+
+      <!-- Primary action: solid cyan fill, dark text (§4). -->
+      <button
+        type="button"
+        class="rounded-lg border border-transparent bg-sheno-primary px-5 py-2.5 font-semibold text-sheno-bg-base hover:bg-sheno-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sheno-focus-ring"
+      >
+        Add to cart
+      </button>
+
+      <!-- ShenoFlow variant (§150): primary button shifted to #06B6D4 so it
+           never reads the same as an "Out for Delivery" cyan chip. -->
+      <button
+        type="button"
+        data-testid="flow-primary"
+        class="rounded-lg border border-transparent bg-sheno-primary-hover px-5 py-2.5 font-semibold text-sheno-bg-base hover:bg-sheno-primary"
+      >
+        Assign route
+      </button>
     </main>
   </body>
 </html>

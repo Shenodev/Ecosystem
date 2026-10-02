@@ -29,14 +29,41 @@ test.describe("ShenoFlow root route", () => {
     expect(response?.status()).toBe(200);
   });
 
-  test("brand token stylesheet is loaded", async ({ page }) => {
-    // Proves @shenodev/ui resolves through nuxt.config css. Without this, a
-    // silently ignored import would still pass the heading assertions above.
-    const primary = await page.evaluate(() =>
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--sheno-primary")
-        .trim(),
+  test("brand token resolves to the documented hex through the Tailwind theme", async ({
+    page,
+  }) => {
+    await expect(page.getByTestId("primary-action")).toHaveCSS(
+      "background-color",
+      "rgb(6, 182, 212)",
     );
-    expect(primary).toBe("#22d3ee");
+  });
+
+  test("ShenoFlow primary button is #06B6D4, not Electric Cyan", async ({ page }) => {
+    // UI_UX_Brief.md §150 is a brand rule, so it is enforced as one. If someone
+    // copies ShenoStore's button markup here, this fails.
+    const background = await page
+      .getByTestId("primary-action")
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+
+    expect(background).not.toBe("rgb(34, 211, 238)");
+    expect(background).toBe("rgb(6, 182, 212)");
+  });
+
+  test("Out for Delivery chip keeps Electric Cyan for the delivery state", async ({
+    page,
+  }) => {
+    // §150: cyan means the delivery state here, so it must stay #22d3ee and
+    // must differ from the button beside it.
+    await expect(page.getByTestId("status-out-for-delivery")).toHaveCSS(
+      "background-color",
+      "rgb(34, 211, 238)",
+    );
+  });
+
+  test("status chip carries a text label, not colour alone", async ({ page }) => {
+    // §5: every chip pairs colour with a text label and an icon.
+    await expect(page.getByTestId("status-out-for-delivery")).toHaveText(
+      /Out for Delivery/,
+    );
   });
 });

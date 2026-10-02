@@ -25,15 +25,23 @@ test.describe("ShenoStore root route", () => {
     expect(response?.status()).toBe(200);
   });
 
-  test("brand token stylesheet is loaded", async ({ page }) => {
-    // Proves @shenodev/ui is actually wired into the bundle, not just
-    // installed. Without this, a broken import would still pass the title
-    // assertions above.
-    const primary = await page.evaluate(() =>
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--sheno-primary")
-        .trim(),
+  test("brand token resolves to Electric Cyan through the Tailwind theme", async ({
+    page,
+  }) => {
+    // Proves @shenodev/ui is actually wired into the bundle and that the
+    // generated utility resolves to the brand hex — a stronger check than
+    // reading the CSS variable, because it exercises the utility Tailwind emits.
+    await expect(page.getByTestId("primary-action")).toHaveCSS(
+      "background-color",
+      "rgb(34, 211, 238)",
     );
-    expect(primary).toBe("#22d3ee");
+  });
+
+  test("primary action label is dark on cyan", async ({ page }) => {
+    // UI_UX_Brief.md §4: white on cyan is 1.7:1 and fails outright.
+    await expect(page.getByTestId("primary-action")).toHaveCSS(
+      "color",
+      "rgb(8, 14, 30)",
+    );
   });
 });

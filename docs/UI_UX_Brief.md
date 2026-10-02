@@ -161,45 +161,47 @@ Unified component logic to maintain a cohesive look across Next.js, Nuxt, and Sv
 
 Next.js (React), SvelteKit (Svelte), and Nuxt (Vue) **cannot share a component runtime**. So `packages/ui` ships:
 
-- **Design tokens** (CSS custom properties) — shared 100%
+- **Design tokens** — a Tailwind v4 `@theme` block, shared 100%
 - **Logo assets and usage rules** — shared 100%
-- **Token-derived Tailwind/Nuxt/Svelte preset** — shared 100%
 - Component *implementations* — **per framework, per app**
+
+Tailwind v4 is CSS-first and framework-agnostic, so **one file replaces three presets**: `packages/ui/src/theme.css`. Every app imports that single entry point and receives identical token values by construction rather than by three hand-maintained presets staying in sync. Apps wire it through their own integration — `@tailwindcss/postcss` (Next.js), `@tailwindcss/vite` (SvelteKit), `@tailwindcss/vite` (Nuxt).
 
 Consistency is enforced at the **token layer**, where it can be shared. Where a component must be reimplemented, the tokens guarantee it looks identical.
 
 ### 3.2 Token Architecture
 
-Three layers, following the standard primitive → semantic → component pattern:
+Three layers, following the standard primitive → semantic → component pattern. Implemented in `packages/ui/src/theme.css`:
 
 ```css
-/* Layer 1 — Primitive (raw values) */
-:root {
-  --sheno-slate-950: #080e1e;
-  --sheno-slate-900: #0F172A;
-  --sheno-slate-800: #1E293B;
-  --sheno-cyan-400:  #22d3ee;
-  --sheno-cyan-500:  #06B6D4;
-  --sheno-white:     #FFFFFF;
-  --sheno-gray-300:  #D1D5DB;
+/* Layer 1 — Primitive (raw values). The only layer allowed to hold a hex. */
+@theme {
+  --color-sheno-slate-950: #080e1e;
+  --color-sheno-slate-900: #0F172A;
+  --color-sheno-slate-800: #1E293B;
+  --color-sheno-cyan-400:  #22d3ee;
+  --color-sheno-cyan-500:  #06B6D4;
+  --color-sheno-white:     #FFFFFF;
+  --color-sheno-gray-300:  #D1D5DB;
 }
 
-/* Layer 2 — Semantic (purpose) */
-:root {
-  --sheno-bg-base:      var(--sheno-slate-950);
-  --sheno-bg-surface:   var(--sheno-slate-900);
-  --sheno-bg-elevated:  var(--sheno-slate-800);
-  --sheno-primary:      var(--sheno-cyan-400);
-  --sheno-primary-hover:var(--sheno-cyan-500);
-  --sheno-text-primary: var(--sheno-white);
-  --sheno-text-secondary: var(--sheno-gray-300);
+/* Layer 2 — Semantic (purpose). Pure var() references, so re-theming a
+   primitive propagates. `inline` makes Tailwind emit the var() reference into
+   utilities instead of inlining the resolved value. */
+@theme inline {
+  --color-sheno-bg-base:      var(--color-sheno-slate-950);
+  --color-sheno-bg-surface:   var(--color-sheno-slate-900);
+  --color-sheno-bg-elevated:  var(--color-sheno-slate-800);
+  --color-sheno-primary:      var(--color-sheno-cyan-400);
+  --color-sheno-primary-hover:var(--color-sheno-cyan-500);
+  --color-sheno-text-primary: var(--color-sheno-white);
+  --color-sheno-text-secondary: var(--color-sheno-gray-300);
 }
 
-/* Layer 3 — Component */
-.btn-primary        { background: var(--sheno-primary); color: var(--sheno-bg-base); }
-.btn-primary:hover  { background: var(--sheno-primary-hover); }
-.card               { background: var(--sheno-bg-surface); }
-.table              { background: var(--sheno-bg-elevated); }
+/* Layer 3 — Component. Utility compositions in app markup, never a hex. */
+<button class="bg-sheno-primary text-sheno-bg-base hover:bg-sheno-primary-hover" />
+<div class="bg-sheno-bg-surface" />
+<table class="bg-sheno-bg-elevated" />
 ```
 
 ### 3.3 Component State Matrix
