@@ -1,0 +1,42 @@
+/**
+ * PrimaryButton — ShenoDev.
+ *
+ * Spec: docs/UI_UX_Brief.md §4. Component tokens resolve through the semantic
+ * layer in tokens.css, so a brand change touches one file.
+ *
+ * Button text is dark (#080e1e) on cyan, never white. Cyan is a light colour:
+ * white on #22d3ee is 1.7:1 and fails outright, dark on cyan is 10.64:1 (AAA).
+ */
+
+.sheno-btn {
+  --sheno-btn-bg: var(--sheno-primary);
+  --sheno-btn-bg-hover: var(--sheno-primary-hover);
+  --sheno-btn-fg: var(--sheno-bg-base);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.625rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.25rem;
+
+  cursor: pointer;
+  background-color: var(--sheno-btn-bg);
+  color: var(--sheno-btn-fg);
+}
+
+.sheno-btn:hover:not(:disabled) {
+  background-color: var(--sheno-btn-bg-hover);
+}
+
+/* Keyboard users must always see where they are. */
+.sheno-btn:focus-visible {
+  outline: 2px solid var(--sheno-focus-ring);
+  outline-offset: 2px;
+}

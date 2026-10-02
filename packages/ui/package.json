@@ -1,0 +1,17 @@
+{
+  "name": "@shenodev/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./src/tokens.css",
+    "./primary-button.css": "./src/primary-button.css"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:ct": "playwright test --project=components"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}
