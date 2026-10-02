@@ -208,6 +208,25 @@ console.log("\nturbo task wiring");
       `turbo run ${task} would execute 0 tasks and exit 0`,
     );
   }
+
+  // Second direction: every task declared in turbo.json must also have an
+  // implementer. A root script check alone misses a task added to turbo.json
+  // with no matching root script — `npx turbo run lint` still passes silently.
+  const turboJson = readJson(join(ROOT, "turbo.json"));
+  if (check("turbo.json is valid JSON", turboJson.ok, turboJson.error)) {
+    const declared = Object.keys(turboJson.data.tasks ?? {});
+    check("turbo.json declares tasks", declared.length > 0);
+
+    for (const task of declared) {
+      // `//#name` is a root-level turbo task, not a per-package script.
+      if (task.startsWith("//")) continue;
+      check(
+        `turbo task "${task}" has at least one package defining it`,
+        defined.has(task),
+        `turbo run ${task} would execute 0 tasks and exit 0`,
+      );
+    }
+  }
 }
 
 console.log(`\n${checks - failures}/${checks} checks passed`);
