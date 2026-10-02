@@ -1,10 +1,15 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "stream",
-  "globalDependencies": [".env", "**/.env.*local"],
+  "globalDependencies": [
+    ".env",
+    "**/.env.*local"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": [
         "dist/**",
         ".next/**",
@@ -18,15 +23,28 @@
       "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": [
+        "^typecheck"
+      ]
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["playwright-report/**", "test-results/**"]
+      "dependsOn": [
+        "typecheck"
+      ],
+      "outputs": [
+        "playwright-report/**",
+        "test-results/**"
+      ]
     },
     "test:e2e": {
-      "dependsOn": ["^build"],
-      "outputs": ["playwright-report/**", "test-results/**"]
+      "dependsOn": [
+        "typecheck",
+        "^build"
+      ],
+      "outputs": [
+        "playwright-report/**",
+        "test-results/**"
+      ]
     }
   }
 }

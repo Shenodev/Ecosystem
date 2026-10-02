@@ -8,12 +8,15 @@
   },
   "scripts": {
     "build:gallery": "tailwindcss -i ./playwright/gallery/gallery.css -o ./playwright/gallery/tailwind.css --minify",
+    "typecheck": "tsc --noEmit",
     "test": "npm run build:gallery && playwright test",
     "test:e2e": "npm run build:gallery && playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@tailwindcss/cli": "^4.3.3",
-    "tailwindcss": "^4.3.3"
+    "@types/node": "^20",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5"
   }
 }

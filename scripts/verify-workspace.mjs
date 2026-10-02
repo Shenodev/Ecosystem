@@ -229,6 +229,38 @@ console.log("\nturbo task wiring");
   }
 }
 
+// --------------------------------------------------------------------- summary
+console.log("\nplaywright webServer isolation");
+// reuseExistingServer lets Playwright adopt a dev server that is already on the
+// port. If that server predates the change under test, the suite passes against
+// stale output. This has silently produced a green run three times on this
+// repo, once of them against an unrelated local service on port 3001.
+{
+  const configs = ["apps", "packages"].flatMap((dir) =>
+    readdirSync(join(ROOT, dir), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => join(ROOT, dir, e.name, "playwright.config.ts"))
+      .filter((p) => existsSync(p)),
+  );
+
+  check("playwright configs found", configs.length > 0, "none found");
+
+  for (const path of configs) {
+    const source = readFileSync(path, "utf8");
+    const name = readJson(path.replace("playwright.config.ts", "package.json"));
+
+    // Only flag an unconditional `true` or a `!process.env.CI` form. Both leave
+    // a local dev server eligible for reuse.
+    const reuses = /reuseExistingServer:\s*(!process\.env\.CI|true)/.test(source);
+
+    check(
+      `${name.ok ? name.data.name : path} sets reuseExistingServer: false`,
+      !reuses,
+      "a stale dev server on that port can serve pre-change output to the suite",
+    );
+  }
+}
+
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) {
   console.log(`RESULT: FAIL (${failures} failing)`);

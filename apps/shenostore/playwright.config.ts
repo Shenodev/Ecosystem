@@ -26,7 +26,9 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --port ${PORT}`,
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    // False on purpose: a dev server already on this port may predate the code
+    // under test, and reusing it turns a green run into a stale one.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

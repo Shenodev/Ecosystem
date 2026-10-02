@@ -21,7 +21,14 @@
 
 @import "tailwindcss";
 
-/* --- Layer 1: Primitive (raw values) ------------------------------------- */
+/* --- Layer 1: Primitive (raw values) -------------------------------------
+ * The only layer permitted to hold a hex.
+ *   slate-950 #080e1e — page background, and the only legal text colour on cyan
+ *   slate-900 #0f172a — cards, sidebars
+ *   slate-800 #1e293b — tables, nested surfaces
+ *   cyan-400  #22d3ee — Electric Cyan: primary action, and the delivery state
+ *   cyan-500  #06b6d4 — cyan hover, and ShenoFlow's primary button (§150)
+ */
 @theme {
   --color-sheno-slate-950: #080e1e;
   --color-sheno-slate-900: #0f172a;
