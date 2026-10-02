@@ -71,13 +71,13 @@ console.log(`  ....  target ${redact(url!)}`);
 // -------------------------------------------------------- 2. connect + query
 console.log("\nconnection");
 
-type Db = typeof import("../src/client.ts");
-let db: Db | undefined;
+type ClientModule = typeof import("../src/client.ts");
+let mod!: ClientModule;
 
 try {
-  const mod = await import("../src/client.ts");
-  db = mod.db;
-  check("client module exports `db`", Boolean(db));
+  mod = await import("../src/client.ts");
+  check("client module exports `db`", Boolean(mod.db));
+  check("client module exports `pool`", Boolean(mod.pool));
 } catch (err) {
   const e = err as Error;
   check(
@@ -90,11 +90,14 @@ try {
   process.exit(1);
 }
 
-const sql = (db as unknown as { $client: { query(q: string): Promise<{ rows: Record<string, unknown>[] }> } })
-  .$client;
+// The exported Pool is the same connection `db` runs on, carrying pg's real
+// type. An earlier version dug it out of `db.$client` behind a hand-written
+// structural cast that declared only `query(q: string)` — which made the
+// parameterised query below and `.end()` both type errors, i.e. the cast lied.
+const pool = mod.pool;
 
 try {
-  const version = await sql.query("select version() as v");
+  const version = await pool.query("select version() as v");
   const raw = String(version.rows[0]?.v ?? "");
   check("server returned a version string", raw.length > 0);
   check("server identifies as PostgreSQL", /PostgreSQL/i.test(raw), `got: ${raw.slice(0, 80)}`);
@@ -105,7 +108,7 @@ try {
 }
 
 try {
-  const current = await sql.query("select current_database() as db, current_user as usr");
+  const current = await pool.query("select current_database() as db, current_user as usr");
   const row = current.rows[0] ?? {};
   check("can read current_database()", typeof row.db === "string");
   check("can read current_user()", typeof row.usr === "string");
@@ -118,7 +121,7 @@ try {
 // ----------------------------------------------------------- 3. schema present
 console.log("\nschema");
 try {
-  const rows = await sql.query(
+  const rows = await pool.query(
     "select table_name from information_schema.tables where table_schema = 'public' and table_name = 'tenants'",
   );
   check("public.tenants exists", rows.rows.length > 0, "run: npm run db:push -w @shenodev/db");
@@ -133,7 +136,7 @@ const { DEMO_TENANT_ID } = await import("../src/schema.ts");
 check("DEMO_TENANT_ID is a valid UUID", /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(DEMO_TENANT_ID));
 
 try {
-  const found = await sql.query("select id, name from tenants where id = $1", [DEMO_TENANT_ID]);
+  const found = await pool.query("select id, name from tenants where id = $1", [DEMO_TENANT_ID]);
   check(
     "reserved demo_tenant_id row exists",
     found.rows.length === 1,
@@ -147,7 +150,7 @@ try {
   check("demo tenant lookup succeeds", false, e.message.slice(0, 200));
 }
 
-await sql.end();
+await pool.end();
 
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) {

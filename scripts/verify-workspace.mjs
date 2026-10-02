@@ -229,6 +229,61 @@ console.log("\nturbo task wiring");
   }
 }
 
+// ------------------------------------------------------------------- database
+console.log("\ndatabase artefacts");
+// The ER map in docs/db-relationships.json is generated from
+// docs/Database_Schema.md. It is what packages/db asserts against live
+// pg_constraint, so a stale copy means the guard is checking the wrong thing.
+{
+  const gen = join(ROOT, "scripts", "build-db-semantic-fragment.py");
+  const map = join(ROOT, "docs", "db-relationships.json");
+
+  check("ER map generator exists", existsSync(gen), `looked in ${gen}`);
+  check("committed ER map exists", existsSync(map), `looked in ${map}`);
+
+  if (existsSync(map)) {
+    const er = readJson(map);
+    if (check("ER map is valid JSON", er.ok, String(er.error ?? ""))) {
+      const tables = Object.keys(er.data.tables ?? {});
+      const fks = er.data.foreign_keys ?? [];
+
+      // The six core tables the ecosystem is built around, per
+      // docs/Database_Schema.md §1.
+      const required = ["tenants", "users", "products", "inventory", "orders", "deliveries"];
+      const absent = required.filter((t) => !tables.includes(t));
+      check(
+        `ER map covers the six core tables`,
+        absent.length === 0,
+        `missing: ${absent.join(", ")}`,
+      );
+
+      // A hand-edited or half-generated map that still parses would pass the
+      // checks above; this catches an edge whose endpoints are not both tables.
+      const dangling = fks.filter((f) => !tables.includes(f.from) || !tables.includes(f.to));
+      check(
+        `every ER map foreign key joins two declared tables`,
+        dangling.length === 0,
+        dangling.map((f) => `${f.from}->${f.to}`).join(", "),
+      );
+
+      // tenants is the isolation boundary, so a map that omits it as a target
+      // has lost the multi-tenancy edge that everything else hangs off.
+      const tenantTargets = fks.filter((f) => f.to === "tenants");
+      check(
+        `tenants is referenced by at least four tables (§10 isolation)`,
+        tenantTargets.length >= 4,
+        `only ${tenantTargets.length} tables point at tenants`,
+      );
+    }
+  }
+
+  const migrations = join(ROOT, "packages", "db", "drizzle");
+  const sqlFiles = existsSync(migrations)
+    ? readdirSync(migrations).filter((f) => f.endsWith(".sql"))
+    : [];
+  check("packages/db has at least one migration file", sqlFiles.length > 0, `looked in ${migrations}`);
+}
+
 // --------------------------------------------------------------------- summary
 console.log("\nplaywright webServer isolation");
 // reuseExistingServer lets Playwright adopt a dev server that is already on the

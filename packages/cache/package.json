@@ -9,9 +9,13 @@
     ".": "./src/client.ts"
   },
   "scripts": {
-    "test": "node --experimental-strip-types scripts/test-roundtrip.mts"
+    "test": "node --experimental-strip-types scripts/test-roundtrip.mts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "typescript": "^5"
   }
 }

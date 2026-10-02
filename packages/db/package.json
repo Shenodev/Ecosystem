@@ -10,11 +10,13 @@
     "./schema": "./src/schema.ts"
   },
   "scripts": {
-    "test": "node --experimental-strip-types scripts/test-connection.mts",
-    "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
     "db:seed": "node --experimental-strip-types scripts/seed.mts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:verify-migration": "node --experimental-strip-types scripts/verify-migration.mts",
+    "test": "node --experimental-strip-types scripts/test-connection.mts && node --experimental-strip-types scripts/test-schema.mts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.30.5"
+    "drizzle-kit": "^0.30.5",
+    "typescript": "^5"
   }
 }

@@ -24,3 +24,8 @@ coverage/
 
 # os
 .DS_Store
+
+# graphify: the generated graph, its cache and the HTML are large build
+# artifacts and are regenerated on demand. The curated ER map derived from
+# docs/Database_Schema.md is committed at docs/db-relationships.json instead.
+graphify-out/

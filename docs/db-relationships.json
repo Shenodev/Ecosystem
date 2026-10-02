@@ -1,0 +1,337 @@
+{
+  "_source": "docs/Database_Schema.md",
+  "_generated_by": "scripts/build-db-semantic-fragment.py",
+  "_note": "Committed so packages/db/scripts/test-schema.mjs can assert it against live pg_constraint. Regenerate with `python3 scripts/build-db-semantic-fragment.py` after editing the doc.",
+  "tables": {
+    "tenants": {
+      "section": "§2",
+      "references": [],
+      "referenced_by": [
+        "branches",
+        "orders",
+        "products",
+        "roles",
+        "users"
+      ],
+      "design_notes": [
+        "Demo is a data tenant, not a bypass (§11)",
+        "No tenant_id on inventory — tenancy is reached via product_id (§6.2)",
+        "email is unique per tenant, not globally (§3)",
+        "sku is unique per tenant, not globally (§5)",
+        "tenants.domain is unique (§2)"
+      ]
+    },
+    "roles": {
+      "section": "§4",
+      "references": [
+        "tenants"
+      ],
+      "referenced_by": [
+        "users"
+      ],
+      "design_notes": []
+    },
+    "branches": {
+      "section": "§9.1",
+      "references": [
+        "tenants"
+      ],
+      "referenced_by": [
+        "inventory",
+        "users"
+      ],
+      "design_notes": [
+        "Branch scoping is a column, not a code path (§4)"
+      ]
+    },
+    "users": {
+      "section": "§3",
+      "references": [
+        "branches",
+        "roles",
+        "tenants"
+      ],
+      "referenced_by": [
+        "deliveries",
+        "orders"
+      ],
+      "design_notes": [
+        "Branch scoping is a column, not a code path (§4)",
+        "Demo is a data tenant, not a bypass (§11)",
+        "email is unique per tenant, not globally (§3)"
+      ]
+    },
+    "products": {
+      "section": "§5",
+      "references": [
+        "tenants"
+      ],
+      "referenced_by": [
+        "inventory",
+        "order_items"
+      ],
+      "design_notes": [
+        "Demo is a data tenant, not a bypass (§11)",
+        "Money is NUMERIC(12,2), never FLOAT (§5)",
+        "No tenant_id on inventory — tenancy is reached via product_id (§6.2)",
+        "sku is unique per tenant, not globally (§5)",
+        "unit_price is copied at purchase time (§9.2)"
+      ]
+    },
+    "inventory": {
+      "section": "§6",
+      "references": [
+        "branches",
+        "products"
+      ],
+      "referenced_by": [
+        "order_items"
+      ],
+      "design_notes": [
+        "Branch scoping is a column, not a code path (§4)",
+        "No tenant_id on inventory — tenancy is reached via product_id (§6.2)",
+        "available = quantity - reserved_quantity (§6.1)"
+      ]
+    },
+    "orders": {
+      "section": "§7",
+      "references": [
+        "tenants",
+        "users"
+      ],
+      "referenced_by": [
+        "deliveries",
+        "order_items"
+      ],
+      "design_notes": [
+        "Demo is a data tenant, not a bypass (§11)",
+        "Money is NUMERIC(12,2), never FLOAT (§5)",
+        "Redis holds the queue, Postgres holds the truth (§8.1)",
+        "UNIQUE (order_id) enforces one delivery per order (§8.1)",
+        "available = quantity - reserved_quantity (§6.1)",
+        "status is independent of payment_status (§7.2)",
+        "unit_price is copied at purchase time (§9.2)"
+      ]
+    },
+    "order_items": {
+      "section": "§9.2",
+      "references": [
+        "inventory",
+        "orders",
+        "products"
+      ],
+      "referenced_by": [],
+      "design_notes": [
+        "Money is NUMERIC(12,2), never FLOAT (§5)",
+        "available = quantity - reserved_quantity (§6.1)",
+        "unit_price is copied at purchase time (§9.2)"
+      ]
+    },
+    "deliveries": {
+      "section": "§8",
+      "references": [
+        "orders",
+        "users"
+      ],
+      "referenced_by": [],
+      "design_notes": [
+        "Demo is a data tenant, not a bypass (§11)",
+        "Redis holds the queue, Postgres holds the truth (§8.1)",
+        "UNIQUE (order_id) enforces one delivery per order (§8.1)"
+      ]
+    }
+  },
+  "foreign_keys": [
+    {
+      "from": "users",
+      "to": "tenants",
+      "why": "§3"
+    },
+    {
+      "from": "users",
+      "to": "roles",
+      "why": "§3"
+    },
+    {
+      "from": "users",
+      "to": "branches",
+      "why": "§4"
+    },
+    {
+      "from": "roles",
+      "to": "tenants",
+      "why": "§4"
+    },
+    {
+      "from": "branches",
+      "to": "tenants",
+      "why": "§9.1"
+    },
+    {
+      "from": "products",
+      "to": "tenants",
+      "why": "§5"
+    },
+    {
+      "from": "inventory",
+      "to": "products",
+      "why": "§6 ON DELETE CASCADE — a deleted product has no stock"
+    },
+    {
+      "from": "inventory",
+      "to": "branches",
+      "why": "§6"
+    },
+    {
+      "from": "orders",
+      "to": "tenants",
+      "why": "§7"
+    },
+    {
+      "from": "orders",
+      "to": "users",
+      "why": "§7 client_id is the buyer"
+    },
+    {
+      "from": "order_items",
+      "to": "orders",
+      "why": "§9.2 ON DELETE CASCADE"
+    },
+    {
+      "from": "order_items",
+      "to": "products",
+      "why": "§9.2"
+    },
+    {
+      "from": "order_items",
+      "to": "inventory",
+      "why": "§9.2 inventory_id records the physical shelf"
+    },
+    {
+      "from": "deliveries",
+      "to": "orders",
+      "why": "§8 ON DELETE CASCADE"
+    },
+    {
+      "from": "deliveries",
+      "to": "users",
+      "why": "§8 agent_id is the delivery agent"
+    }
+  ],
+  "rationale": [
+    {
+      "id": "no_tenant_id_on_inventory",
+      "label": "No tenant_id on inventory — tenancy is reached via product_id (§6.2)",
+      "applies_to": [
+        "inventory",
+        "products",
+        "tenants"
+      ],
+      "why": "A second copy of the tenant boundary could disagree with the product's own tenant, and that disagreement is a cross-tenant leak."
+    },
+    {
+      "id": "reserved_quantity_invariant",
+      "label": "available = quantity - reserved_quantity (§6.1)",
+      "applies_to": [
+        "inventory",
+        "order_items",
+        "orders"
+      ],
+      "why": "The one invariant in the schema that must never be violated — violating it means selling stock that is not physically present."
+    },
+    {
+      "id": "unit_price_copied_at_purchase",
+      "label": "unit_price is copied at purchase time (§9.2)",
+      "applies_to": [
+        "order_items",
+        "orders",
+        "products"
+      ],
+      "why": "The order total is what the customer agreed to; a later price edit must not rewrite history."
+    },
+    {
+      "id": "one_delivery_per_order",
+      "label": "UNIQUE (order_id) enforces one delivery per order (§8.1)",
+      "applies_to": [
+        "deliveries",
+        "orders"
+      ],
+      "why": "Without it two agents could both claim the same order and the buyer would see two agents."
+    },
+    {
+      "id": "sku_unique_per_tenant",
+      "label": "sku is unique per tenant, not globally (§5)",
+      "applies_to": [
+        "products",
+        "tenants"
+      ],
+      "why": "A global constraint would force SKU rewriting across tenants and break barcode scanning for anyone onboarding a second storefront."
+    },
+    {
+      "id": "email_unique_per_tenant",
+      "label": "email is unique per tenant, not globally (§3)",
+      "applies_to": [
+        "tenants",
+        "users"
+      ],
+      "why": "A seller operating two storefronts is one identity with two tenant memberships, not two accounts."
+    },
+    {
+      "id": "domain_unique_for_security",
+      "label": "tenants.domain is unique (§2)",
+      "applies_to": [
+        "tenants"
+      ],
+      "why": "Two tenants sharing a domain means one seller's storefront is reachable under another's identity. A security constraint, not a convenience."
+    },
+    {
+      "id": "money_is_numeric",
+      "label": "Money is NUMERIC(12,2), never FLOAT (§5)",
+      "applies_to": [
+        "order_items",
+        "orders",
+        "products"
+      ],
+      "why": "Binary floating point cannot represent 0.10; summing float prices across an order produces reconciliation errors."
+    },
+    {
+      "id": "status_independent_of_payment",
+      "label": "status is independent of payment_status (§7.2)",
+      "applies_to": [
+        "orders"
+      ],
+      "why": "A COD order reaches `completed` while payment is still `pending`. Collapsing them makes 'is this paid?' unanswerable for COD."
+    },
+    {
+      "id": "redis_holds_queue_postgres_holds_truth",
+      "label": "Redis holds the queue, Postgres holds the truth (§8.1)",
+      "applies_to": [
+        "deliveries",
+        "orders"
+      ],
+      "why": "The queue is transient dispatch state. A Redis flush delays dispatch; it does not erase it."
+    },
+    {
+      "id": "branch_scoping_is_a_column",
+      "label": "Branch scoping is a column, not a code path (§4)",
+      "applies_to": [
+        "branches",
+        "inventory",
+        "users"
+      ],
+      "why": "Enforcing 'Admin manages a single branch' in application code means every new query has to remember the rule."
+    },
+    {
+      "id": "demo_is_a_data_tenant",
+      "label": "Demo is a data tenant, not a bypass (§11)",
+      "applies_to": [
+        "deliveries",
+        "orders",
+        "products",
+        "tenants",
+        "users"
+      ],
+      "why": "The moment Demo mode skips isolation checks, it becomes a way to read production tenants."
+    }
+  ]
+}
