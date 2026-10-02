@@ -13,6 +13,7 @@
     "test": "node --experimental-strip-types scripts/test-connection.mts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
+    "db:seed": "node --experimental-strip-types scripts/seed.mts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

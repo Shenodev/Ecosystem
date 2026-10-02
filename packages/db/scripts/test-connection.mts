@@ -127,6 +127,26 @@ try {
   check("introspection query succeeds", false, e.message.slice(0, 200));
 }
 
+// -------------------------------------------------- 4. reserved demo tenant
+console.log("\ndemo tenant");
+const { DEMO_TENANT_ID } = await import("../src/schema.ts");
+check("DEMO_TENANT_ID is a valid UUID", /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(DEMO_TENANT_ID));
+
+try {
+  const found = await sql.query("select id, name from tenants where id = $1", [DEMO_TENANT_ID]);
+  check(
+    "reserved demo_tenant_id row exists",
+    found.rows.length === 1,
+    "run: npm run db:seed -w @shenodev/db",
+  );
+  if (found.rows.length === 1) {
+    console.log(`  ....  ${DEMO_TENANT_ID} "${found.rows[0].name}"`);
+  }
+} catch (err) {
+  const e = err as Error;
+  check("demo tenant lookup succeeds", false, e.message.slice(0, 200));
+}
+
 await sql.end();
 
 console.log(`\n${checks - failures}/${checks} checks passed`);

@@ -129,6 +129,16 @@ if (check("exists", existsSync(turboPath))) {
         "each app needs a dev task",
       );
     }
+
+    // A changed DATABASE_URL must invalidate the cache. turbo hashes
+    // globalDependencies into every task key; if .env is missing, tasks silently
+    // reuse results built against a stale connection string.
+    const globalDeps = Array.isArray(t.globalDependencies) ? t.globalDependencies : [];
+    check(
+      "globalDependencies includes .env",
+      globalDeps.includes(".env"),
+      `got: ${JSON.stringify(globalDeps)}`,
+    );
   }
 }
 
