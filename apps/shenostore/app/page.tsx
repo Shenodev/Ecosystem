@@ -1,4 +1,24 @@
-export default function Home() {
+import { headers } from "next/headers";
+
+import { ProductCard } from "../components/ProductCard";
+import { listCatalogue, resolveTenantId } from "../lib/catalog";
+
+/**
+ * ShenoStore storefront.
+ *
+ * Reads the catalogue for the tenant that owns the requested host. Server
+ * component rather than a client fetch: the prices are in Postgres, and
+ * shipping them to the browser first would show an empty grid and then repaint
+ * it — while putting the tenant predicate somewhere a client could change.
+ */
+export default async function Home() {
+  // cookies()/headers() are async in Next 15+. This also opts the route into
+  // dynamic rendering, which is required: a statically prerendered storefront
+  // would freeze one tenant's catalogue for every host.
+  const requestHeaders = await headers();
+  const tenantId = await resolveTenantId(requestHeaders.get("host"));
+  const catalogue = await listCatalogue(tenantId);
+
   return (
     <main className="min-h-screen bg-sheno-bg-base p-8 text-sheno-text-primary">
       <h1 className="text-3xl font-semibold">ShenoStore</h1>
@@ -13,6 +33,29 @@ export default function Home() {
       >
         Browse catalogue
       </button>
+
+      <section aria-labelledby="catalogue-heading" className="mt-12">
+        <h2 id="catalogue-heading" className="text-xl font-semibold">
+          Catalogue
+        </h2>
+
+        {catalogue.length === 0 ? (
+          <p className="mt-4 text-sheno-text-secondary">
+            No products listed yet.
+          </p>
+        ) : (
+          <ul
+            data-testid="product-grid"
+            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {catalogue.map((product) => (
+              <li key={product.id}>
+                <ProductCard product={product} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }
