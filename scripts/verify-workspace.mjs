@@ -172,6 +172,44 @@ if (check("turbo is installed", existsSync(turboPkgPath))) {
 }
 
 // --------------------------------------------------------------------- summary
+console.log("\nturbo task wiring");
+// `turbo run <task>` exits 0 when no package defines that script, so any gate
+// wired to it passes forever while running nothing. Check every root script
+// that delegates to turbo.
+{
+  const manifests = ["apps", "packages"].flatMap((dir) =>
+    readdirSync(join(ROOT, dir), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => join(ROOT, dir, e.name, "package.json"))
+      .filter((p) => existsSync(p)),
+  );
+
+  const defined = new Set();
+  for (const path of manifests) {
+    const m = readJson(path);
+    if (m.ok) for (const name of Object.keys(m.data.scripts ?? {})) defined.add(name);
+  }
+
+  const turboTasks = Object.entries(p.scripts ?? {})
+    .map(([name, body]) => [name, String(body).match(/turbo run ([\w:-]+)/)?.[1]] ?? [])
+    .filter(([, task]) => Boolean(task))
+    .map(([name, task]) => [name, task]);
+
+  check(
+    "root scripts delegate to turbo",
+    turboTasks.length > 0,
+    "expected scripts like \"test:e2e\": \"turbo run test:e2e\"",
+  );
+
+  for (const [name, task] of turboTasks) {
+    check(
+      `"${name}" has at least one package defining "${task}"`,
+      defined.has(task),
+      `turbo run ${task} would execute 0 tasks and exit 0`,
+    );
+  }
+}
+
 console.log(`\n${checks - failures}/${checks} checks passed`);
 if (failures > 0) {
   console.log(`RESULT: FAIL (${failures} failing)`);

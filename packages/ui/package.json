@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "playwright test",
-    "test:ct": "playwright test --project=components"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0"
