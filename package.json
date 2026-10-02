@@ -1,0 +1,26 @@
+{
+  "name": "shenodev-ecosystem",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ShenoDev Ecosystem — ShenoStore, ShenoInventory, ShenoFlow",
+  "packageManager": "npm@11.12.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "node scripts/verify-workspace.mjs",
+    "test:e2e": "turbo run test:e2e",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# builds
+.next/
+.svelte-kit/
+.output/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# test
+playwright-report/
+test-results/
+coverage/
+
+# env
+.env
+.env*.local
+
+# os
+.DS_Store
